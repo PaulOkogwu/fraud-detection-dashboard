@@ -134,6 +134,8 @@ CI runs on push and pull request to `main` via:
 
 PaySim is a synthetic financial transaction dataset. Reported model metrics on this dataset can be high because synthetic patterns are cleaner than real banking environments. These results should not be treated as proof of production readiness for noisy, adversarial, real-world fraud systems.
 
+This repository includes `data/demo_transactions.csv` as a lightweight demo file only, intended for dashboard screenshots and quick local testing.
+
 ## 12. Attribution
 
 This project is adapted from ARPAHLS/cfd and remains licensed under the MIT License.
