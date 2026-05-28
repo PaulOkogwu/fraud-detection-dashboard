@@ -89,6 +89,22 @@ Run the Streamlit dashboard:
 streamlit run app.py
 ```
 
+### 4. Docker Deployment
+
+Build the dashboard image:
+
+```bash
+docker build -t fraudlens-dashboard .
+```
+
+Run the dashboard container:
+
+```bash
+docker run --rm -p 8501:8501 fraudlens-dashboard
+```
+
+Then open `http://localhost:8501` in your browser.
+
 The dashboard includes:
 
 - Dataset profiling and fraud analytics visualizations
