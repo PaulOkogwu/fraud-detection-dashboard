@@ -17,6 +17,7 @@ FraudLens is an adapted, MIT-licensed fraud detection project for portfolio and 
 - JSON-based audit logging for traceability
 - CLI-based training and prediction workflow
 - Unit, integration, and leakage-focused tests
+- Streamlit dashboard with fraud analytics and model comparison
 
 ## Model Performance
 
@@ -86,6 +87,13 @@ Run the Streamlit dashboard:
 ```bash
 streamlit run app.py
 ```
+
+The dashboard includes:
+
+- Dataset profiling and fraud analytics visualizations
+- Sample prediction workflow using the trained model
+- Model comparison across Logistic Regression, Random Forest, and XGBoost (if available)
+- Saved comparison outputs in reusable report files (`reports/model_comparison_summary.csv` and `reports/model_comparison_details.json`)
 
 ### Dashboard Preview
 

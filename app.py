@@ -12,6 +12,7 @@ from sklearn.metrics import confusion_matrix
 
 from src.data_loader import clean_data, load_data
 from src.features import feature_engineering
+from src.model_comparison import compare_models, save_comparison_results
 from src.model import FraudDetector
 
 
@@ -142,6 +143,62 @@ if "type" in clean_df.columns and "isFraud" in clean_df.columns:
     chart_col4.pyplot(fig, clear_figure=True)
 else:
     chart_col4.info("Fraud rate chart requires both 'type' and 'isFraud' columns.")
+
+st.subheader("Model Comparison")
+st.caption("Compare Logistic Regression, Random Forest, and XGBoost on the same split.")
+
+comparison_test_size = st.slider(
+    "Comparison test split",
+    min_value=0.1,
+    max_value=0.4,
+    value=0.2,
+    step=0.05,
+)
+
+if st.button("Run Model Comparison"):
+    if "isFraud" not in clean_df.columns:
+        st.error("Column 'isFraud' is required for model comparison.")
+    else:
+        try:
+            engineered = feature_engineering(clean_df.copy())
+            comparison_df, comparison_details = compare_models(
+                engineered,
+                target_col="isFraud",
+                test_size=float(comparison_test_size),
+                random_state=42,
+            )
+            saved_paths = save_comparison_results(comparison_df, comparison_details)
+
+            st.success("Model comparison complete.")
+            st.dataframe(comparison_df, use_container_width=True)
+            st.caption(
+                f"Saved reusable results to `{saved_paths['summary_csv']}` and "
+                f"`{saved_paths['details_json']}`."
+            )
+
+            trained_models = comparison_df[comparison_df["status"] == "trained"]["model"].tolist()
+            if trained_models:
+                st.markdown("**Confusion Matrices**")
+                matrix_cols = st.columns(min(3, len(trained_models)))
+                for index, model_name in enumerate(trained_models):
+                    cm = comparison_details["models"][model_name]["confusion_matrix"]
+                    fig, ax = plt.subplots(figsize=(4.5, 3.8))
+                    sns.heatmap(
+                        cm,
+                        annot=True,
+                        fmt="d",
+                        cmap="Blues",
+                        cbar=False,
+                        xticklabels=["Pred Non-Fraud", "Pred Fraud"],
+                        yticklabels=["Actual Non-Fraud", "Actual Fraud"],
+                        ax=ax,
+                    )
+                    ax.set_title(f"{model_name}")
+                    ax.set_xlabel("Predicted Label")
+                    ax.set_ylabel("Actual Label")
+                    matrix_cols[index % len(matrix_cols)].pyplot(fig, clear_figure=True)
+        except Exception as exc:  # pylint: disable=broad-except
+            st.error(f"Model comparison failed: {exc}")
 
 st.subheader("Sample Predictions")
 model_path = st.text_input("Model path", value="models/fraud_model.pkl")
