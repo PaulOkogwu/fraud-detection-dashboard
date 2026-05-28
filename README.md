@@ -79,6 +79,14 @@ Run tests:
 pytest tests/
 ```
 
+### 3. Dashboard
+
+Run the Streamlit dashboard:
+
+```bash
+streamlit run app.py
+```
+
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE).
