@@ -1,130 +1,143 @@
 ﻿# FraudLens
 
-FraudLens is an adapted, MIT-licensed fraud detection project for portfolio and educational use. It keeps the original core pipeline and model workflow while presenting a cleaner project identity for independent use.
-
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Dataset](https://img.shields.io/badge/Dataset-PaySim-20B2AA?logo=kaggle&logoColor=white)](https://www.kaggle.com/datasets/ealaxi/paysim1?resource=download)
 [![CI](https://github.com/PaulOkogwu/fraud-detection-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/PaulOkogwu/fraud-detection-dashboard/actions/workflows/ci.yml)
 
-## Overview
+## 1. Overview
 
-**FraudLens** is a modular fraud detection system designed to identify suspicious financial transactions. Built on the PaySim dataset, it supports training and prediction through a straightforward CLI pipeline.
+FraudLens is a machine learning fraud detection dashboard and CLI toolkit built for portfolio demonstration and technical exploration. It supports transaction data ingestion, feature engineering, model training/inference, comparative evaluation, and explainability reporting in a single codebase.
 
-## Key Features
+## 2. Key Features
 
-- Modular architecture for data ingestion, feature engineering, modeling, and evaluation
-- Random Forest and Gradient Boosting model support
-- JSON-based audit logging for traceability
-- CLI-based training and prediction workflow
-- Unit, integration, and leakage-focused tests
-- Streamlit dashboard with fraud analytics and model comparison
-- Feature-importance-based explainability for tree models (with optional SHAP when available)
+- Streamlit dashboard for fraud analytics and model insights
+- CLI workflow for model training and sample prediction
+- Model comparison on a shared train/test split
+- Explainability via tree-model feature importance (with optional SHAP)
+- Test suite with GitHub Actions CI validation
+- Dockerized dashboard deployment path
 
-## Model Performance
+## 3. Tech Stack
 
-The current release includes a Random Forest classifier trained on PaySim data.
+- Python 3.11
+- pandas, NumPy
+- scikit-learn
+- XGBoost (optional in comparison flow if unavailable)
+- matplotlib, seaborn
+- Streamlit
+- pytest + GitHub Actions
+- Docker
 
-| Metric | Score | Notes |
-| :--- | :--- | :--- |
-| ROC-AUC | 0.999 | Strong discrimination on synthetic data |
-| Precision | 1.00 | No false positives in the referenced test run |
-| Recall | 1.00 | Full fraud capture in the referenced test run |
+## 4. Machine Learning Pipeline
 
-> Performance on PaySim is based on synthetic transaction behavior and may not directly match real-world production environments.
+1. Load transaction dataset
+2. Clean and normalize schema (`src/data_loader.py`)
+3. Engineer behavioral/time/type features (`src/features.py`)
+4. Train classifier (`src/model.py`)
+5. Evaluate and inspect outputs in CLI/dashboard
 
-## Project Structure
+## 5. Dashboard Features
 
-```text
-fraud-detection-dashboard/
-  docs/
-  models/
-  src/
-  tests/
-  main.py
-  requirements.txt
-```
+- Dataset overview (rows, columns, fraud/non-fraud counts)
+- Fraud analytics visualizations:
+  - Fraud vs non-fraud distribution
+  - Transaction type breakdown
+  - Amount distribution
+  - Fraud rate by transaction type
+- Sample prediction workflow with confusion matrix display
 
-## Quick Start
-
-### 1. Installation
-
-```bash
-# Clone your adapted repository
-git clone https://github.com/PaulOkogwu/fraud-detection-dashboard.git
-cd fraud-detection-dashboard
-
-# Setup environment
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### 2. Usage
-
-Train:
-
-```bash
-python main.py --mode train --model_type rf
-```
-
-Predict:
-
-```bash
-python main.py --mode predict --model_path models/fraud_model.pkl
-```
-
-Run tests:
-
-```bash
-pytest tests/
-```
-
-### 3. Dashboard
-
-Run the Streamlit dashboard:
+Run dashboard:
 
 ```bash
 streamlit run app.py
 ```
 
-### 4. Docker Deployment
+## 6. Model Comparison
 
-Build the dashboard image:
+The dashboard includes a comparison workflow for:
+
+- Logistic Regression
+- Random Forest
+- XGBoost (if available)
+
+Metrics reported per model:
+
+- Accuracy
+- Precision
+- Recall
+- F1-score
+- ROC-AUC
+- Confusion matrix
+
+Reusable artifacts are saved to:
+
+- `reports/model_comparison_summary.csv`
+- `reports/model_comparison_details.json`
+
+## 7. Explainability
+
+FraudLens provides feature-importance-based explainability for tree-based models as the stable default. The dashboard shows top contributing features in both table and chart form.
+
+Optional SHAP explanations are available when SHAP can be imported cleanly; otherwise the dashboard continues with built-in feature importance without failing.
+
+## 8. Setup Instructions
+
+```bash
+git clone https://github.com/PaulOkogwu/fraud-detection-dashboard.git
+cd fraud-detection-dashboard
+
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+CLI usage:
+
+```bash
+# Train
+python main.py --mode train --model_type rf
+
+# Predict
+python main.py --mode predict --model_path models/fraud_model.pkl
+```
+
+## 9. Docker Instructions
+
+Build image:
 
 ```bash
 docker build -t fraudlens-dashboard .
 ```
 
-Run the dashboard container:
+Run container:
 
 ```bash
 docker run --rm -p 8501:8501 fraudlens-dashboard
 ```
 
-Then open `http://localhost:8501` in your browser.
+Open: `http://localhost:8501`
 
-The dashboard includes:
+## 10. Testing / CI
 
-- Dataset profiling and fraud analytics visualizations
-- Sample prediction workflow using the trained model
-- Model comparison across Logistic Regression, Random Forest, and XGBoost (if available)
-- Model explainability with top contributing features for tree-based models, plus optional SHAP views when SHAP is installed
-- Saved comparison outputs in reusable report files (`reports/model_comparison_summary.csv` and `reports/model_comparison_details.json`)
+Run tests locally:
 
-### Dashboard Preview
+```bash
+pytest tests/
+```
 
-Add dashboard screenshots here for portfolio presentation, for example:
+CI runs on push and pull request to `main` via:
 
-- `assets/dashboard-overview.png`
-- `assets/dashboard-predictions.png`
+- `.github/workflows/ci.yml`
 
-## License
+## 11. Dataset Note
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE).
+PaySim is a synthetic financial transaction dataset. Reported model metrics on this dataset can be high because synthetic patterns are cleaner than real banking environments. These results should not be treated as proof of production readiness for noisy, adversarial, real-world fraud systems.
 
-## Attribution
+## 12. Attribution
 
 This project is adapted from ARPAHLS/cfd and remains licensed under the MIT License.
+
+## 13. License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
