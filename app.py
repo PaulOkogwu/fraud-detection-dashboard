@@ -11,6 +11,11 @@ import streamlit as st
 from sklearn.metrics import confusion_matrix
 
 from src.data_loader import clean_data, load_data
+from src.explainability import (
+    align_features_for_model,
+    compute_optional_shap_importance,
+    get_tree_feature_importance,
+)
 from src.features import feature_engineering
 from src.model_comparison import compare_models, save_comparison_results
 from src.model import FraudDetector
@@ -251,3 +256,65 @@ if st.button("Run Predictions"):
         st.pyplot(fig, clear_figure=True)
     except Exception as exc:  # pylint: disable=broad-except
         st.error(f"Prediction failed: {exc}")
+
+st.subheader("Model Explainability")
+st.caption("Feature-importance-based explainability for tree-based models.")
+top_n_features = st.slider("Top features to display", min_value=5, max_value=30, value=15)
+include_shap = st.checkbox("Include optional SHAP explanation (if available)", value=False)
+
+if st.button("Generate Explainability"):
+    try:
+        detector = FraudDetector()
+        detector.load_model(model_path)
+    except Exception as exc:  # pylint: disable=broad-except
+        st.error(f"Unable to load model for explainability: {exc}")
+        st.stop()
+
+    try:
+        engineered = feature_engineering(clean_df.copy())
+        feature_frame = engineered.drop(columns=["isFraud"], errors="ignore")
+        aligned_features = align_features_for_model(feature_frame, detector.feature_names)
+        feature_names = detector.feature_names or aligned_features.columns.tolist()
+
+        importance_df = get_tree_feature_importance(
+            detector.model,
+            feature_names,
+            top_n=top_n_features,
+        )
+        st.markdown("**Top Feature Importances**")
+        st.dataframe(importance_df, use_container_width=True)
+
+        fig, ax = plt.subplots(figsize=(8, max(4, int(top_n_features * 0.35))))
+        sns.barplot(data=importance_df, x="importance", y="feature", ax=ax, color="#4C78A8")
+        ax.set_title("Top Contributing Features")
+        ax.set_xlabel("Feature Importance")
+        ax.set_ylabel("Feature")
+        st.pyplot(fig, clear_figure=True)
+
+        if include_shap:
+            shap_df, shap_error = compute_optional_shap_importance(
+                detector.model,
+                aligned_features,
+                max_samples=200,
+            )
+            if shap_df is None:
+                st.info(shap_error)
+            else:
+                shap_top = shap_df.head(top_n_features)
+                st.markdown("**Optional SHAP (Mean Absolute Contribution)**")
+                st.dataframe(shap_top, use_container_width=True)
+
+                fig, ax = plt.subplots(figsize=(8, max(4, int(top_n_features * 0.35))))
+                sns.barplot(
+                    data=shap_top,
+                    x="mean_abs_shap",
+                    y="feature",
+                    ax=ax,
+                    color="#F58518",
+                )
+                ax.set_title("Top SHAP Feature Contributions")
+                ax.set_xlabel("Mean |SHAP value|")
+                ax.set_ylabel("Feature")
+                st.pyplot(fig, clear_figure=True)
+    except Exception as exc:  # pylint: disable=broad-except
+        st.error(f"Explainability failed: {exc}")

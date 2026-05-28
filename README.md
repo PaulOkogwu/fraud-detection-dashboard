@@ -18,6 +18,7 @@ FraudLens is an adapted, MIT-licensed fraud detection project for portfolio and 
 - CLI-based training and prediction workflow
 - Unit, integration, and leakage-focused tests
 - Streamlit dashboard with fraud analytics and model comparison
+- Feature-importance-based explainability for tree models (with optional SHAP when available)
 
 ## Model Performance
 
@@ -93,6 +94,7 @@ The dashboard includes:
 - Dataset profiling and fraud analytics visualizations
 - Sample prediction workflow using the trained model
 - Model comparison across Logistic Regression, Random Forest, and XGBoost (if available)
+- Model explainability with top contributing features for tree-based models, plus optional SHAP views when SHAP is installed
 - Saved comparison outputs in reusable report files (`reports/model_comparison_summary.csv` and `reports/model_comparison_details.json`)
 
 ### Dashboard Preview
