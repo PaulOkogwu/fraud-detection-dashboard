@@ -53,6 +53,20 @@ Run dashboard:
 streamlit run app.py
 ```
 
+### Dashboard Preview
+
+#### 1. Dashboard Overview
+![Dashboard Overview](assets/screenshots/dashboard-overview.png)
+
+#### 2. Fraud Analytics Charts
+![Fraud Analytics](assets/screenshots/fraud-analytics.png)
+
+#### 3. Model Comparison Section
+![Model Comparison](assets/screenshots/model-comparison.png)
+
+#### 4. Explainability / Feature Importance Section
+![Feature Importance](assets/screenshots/feature-importance.png)
+
 ## 6. Model Comparison
 
 The dashboard includes a comparison workflow for:
