@@ -87,6 +87,13 @@ Run the Streamlit dashboard:
 streamlit run app.py
 ```
 
+### Dashboard Preview
+
+Add dashboard screenshots here for portfolio presentation, for example:
+
+- `assets/dashboard-overview.png`
+- `assets/dashboard-predictions.png`
+
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE).

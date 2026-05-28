@@ -4,8 +4,11 @@ Streamlit dashboard for FraudLens.
 from io import StringIO
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 import streamlit as st
+from sklearn.metrics import confusion_matrix
 
 from src.data_loader import clean_data, load_data
 from src.features import feature_engineering
@@ -15,6 +18,7 @@ from src.model import FraudDetector
 st.set_page_config(page_title="FraudLens Dashboard", layout="wide")
 st.title("FraudLens Dashboard")
 st.caption("Dataset overview and sample fraud predictions")
+sns.set_theme(style="whitegrid")
 
 
 def _load_uploaded_csv(uploaded_file) -> pd.DataFrame:
@@ -78,6 +82,67 @@ else:
 with st.expander("Preview dataset"):
     st.dataframe(clean_df.head(25), use_container_width=True)
 
+st.subheader("Fraud Analytics Visualizations")
+chart_col1, chart_col2 = st.columns(2)
+
+if "isFraud" in clean_df.columns:
+    fraud_dist = clean_df["isFraud"].map({0: "Non-Fraud", 1: "Fraud"}).fillna("Unknown")
+    fraud_counts = fraud_dist.value_counts().reindex(["Non-Fraud", "Fraud"], fill_value=0).reset_index()
+    fraud_counts.columns = ["label", "count"]
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+    sns.barplot(data=fraud_counts, x="label", y="count", ax=ax, palette=["#4C78A8", "#E45756"])
+    ax.set_title("Fraud vs Non-Fraud Distribution")
+    ax.set_xlabel("Class")
+    ax.set_ylabel("Transaction Count")
+    chart_col1.pyplot(fig, clear_figure=True)
+else:
+    chart_col1.info("Fraud distribution chart requires an 'isFraud' column.")
+
+if "type" in clean_df.columns:
+    type_counts = clean_df["type"].value_counts(dropna=False).reset_index()
+    type_counts.columns = ["type", "count"]
+
+    fig, ax = plt.subplots(figsize=(7, 4))
+    sns.barplot(data=type_counts, x="type", y="count", ax=ax, color="#72B7B2")
+    ax.set_title("Transaction Type Breakdown")
+    ax.set_xlabel("Transaction Type")
+    ax.set_ylabel("Transaction Count")
+    ax.tick_params(axis="x", rotation=20)
+    chart_col2.pyplot(fig, clear_figure=True)
+else:
+    chart_col2.info("Transaction type chart requires a 'type' column.")
+
+chart_col3, chart_col4 = st.columns(2)
+
+if "amount" in clean_df.columns:
+    fig, ax = plt.subplots(figsize=(7, 4))
+    sns.histplot(clean_df["amount"], bins=40, kde=True, ax=ax, color="#54A24B")
+    ax.set_title("Transaction Amount Distribution")
+    ax.set_xlabel("Amount")
+    ax.set_ylabel("Frequency")
+    chart_col3.pyplot(fig, clear_figure=True)
+else:
+    chart_col3.info("Amount distribution requires an 'amount' column.")
+
+if "type" in clean_df.columns and "isFraud" in clean_df.columns:
+    fraud_rate = (
+        clean_df.groupby("type", dropna=False)["isFraud"]
+        .mean()
+        .mul(100)
+        .sort_values(ascending=False)
+        .reset_index(name="fraud_rate_pct")
+    )
+    fig, ax = plt.subplots(figsize=(7, 4))
+    sns.barplot(data=fraud_rate, x="type", y="fraud_rate_pct", ax=ax, color="#F58518")
+    ax.set_title("Fraud Rate by Transaction Type")
+    ax.set_xlabel("Transaction Type")
+    ax.set_ylabel("Fraud Rate (%)")
+    ax.tick_params(axis="x", rotation=20)
+    chart_col4.pyplot(fig, clear_figure=True)
+else:
+    chart_col4.info("Fraud rate chart requires both 'type' and 'isFraud' columns.")
+
 st.subheader("Sample Predictions")
 model_path = st.text_input("Model path", value="models/fraud_model.pkl")
 sample_size = st.slider("Number of rows to score", min_value=1, max_value=200, value=10)
@@ -110,5 +175,22 @@ if st.button("Run Predictions"):
 
         st.success("Predictions complete.")
         st.dataframe(result_df, use_container_width=True)
+
+        cm = confusion_matrix(y_true, preds, labels=[0, 1])
+        fig, ax = plt.subplots(figsize=(5, 4))
+        sns.heatmap(
+            cm,
+            annot=True,
+            fmt="d",
+            cmap="Blues",
+            cbar=False,
+            xticklabels=["Pred Non-Fraud", "Pred Fraud"],
+            yticklabels=["Actual Non-Fraud", "Actual Fraud"],
+            ax=ax,
+        )
+        ax.set_title("Confusion Matrix (Sample Predictions)")
+        ax.set_xlabel("Predicted Label")
+        ax.set_ylabel("Actual Label")
+        st.pyplot(fig, clear_figure=True)
     except Exception as exc:  # pylint: disable=broad-except
         st.error(f"Prediction failed: {exc}")
