@@ -5,6 +5,7 @@ FraudLens is an adapted, MIT-licensed fraud detection project for portfolio and 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Dataset](https://img.shields.io/badge/Dataset-PaySim-20B2AA?logo=kaggle&logoColor=white)](https://www.kaggle.com/datasets/ealaxi/paysim1?resource=download)
+[![CI](https://github.com/PaulOkogwu/fraud-detection-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/PaulOkogwu/fraud-detection-dashboard/actions/workflows/ci.yml)
 
 ## Overview
 
